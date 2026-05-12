@@ -31,11 +31,48 @@ export const addTextToImage = (imageUrl: string, textHook: string, style: string
   const encodedText = encodeURIComponent(textHook)
   const styleParams = getStyleParams(style)
 
-  return `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/fetch/${styleParams}/l_text:Arial_bold_${styleParams.fontSize}:${encodedText}/fl_layer_apply/c_scale,w_1280,h_720/${imageUrl}`
+  // Build Cloudinary transformation URL with proper parameter formatting
+  const textLayer = `text:Arial_bold_${styleParams.fontSize}_${styleParams.color}:${encodedText}`
+  const transformations = [
+    {
+      overlay: textLayer,
+      gravity: 'center',
+      y: 0,
+      color: styleParams.color,
+      stroke: `solid_${styleParams.strokeWidth}_${styleParams.strokeColor}`,
+      width: 1200,
+      crop: 'fit',
+    },
+    {
+      crop: 'scale',
+      width: 1280,
+      height: 720,
+    },
+  ]
+
+  // Use Cloudinary SDK or build manual URL with fetch parameter
+  const cloudinaryUrl = `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/fetch/l_text:Arial_bold_${styleParams.fontSize}_${styleParams.color}:${encodedText},g_center,y_0,co_${styleParams.color},b_solid_${styleParams.strokeWidth}_${styleParams.strokeColor},w_1200,c_fit/c_scale,w_1280,h_720,ar_16:9,c_fill/${imageUrl}`
+
+  return cloudinaryUrl
 }
 
-const getStyleParams = (style: string): Record<string, any> => {
-  const styles: Record<string, Record<string, any>> = {
+const getStyleParams = (
+  style: string
+): {
+  fontSize: number
+  color: string
+  strokeColor: string
+  strokeWidth: number
+} => {
+  const styles: Record<
+    string,
+    {
+      fontSize: number
+      color: string
+      strokeColor: string
+      strokeWidth: number
+    }
+  > = {
     'bold-red': {
       fontSize: 80,
       color: 'FF0000',
