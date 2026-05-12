@@ -23,37 +23,42 @@ export const uploadImage = async (file: File): Promise<string> => {
     const data = await response.json()
     return data.secure_url
   } catch (error) {
+    console.error('Cloudinary upload error:', error)
     throw new Error('Failed to upload image to Cloudinary')
   }
 }
 
-export const addTextToImage = (imageUrl: string, textHook: string, style: string): string => {
-  const encodedText = encodeURIComponent(textHook)
+export const addTextToImage = (
+  imageUrl: string,
+  textHook: string,
+  style: string
+): string => {
   const styleParams = getStyleParams(style)
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
 
-  // Build Cloudinary transformation URL with proper parameter formatting
-  const textLayer = `text:Arial_bold_${styleParams.fontSize}_${styleParams.color}:${encodedText}`
-  const transformations = [
-    {
-      overlay: textLayer,
-      gravity: 'center',
-      y: 0,
-      color: styleParams.color,
-      stroke: `solid_${styleParams.strokeWidth}_${styleParams.strokeColor}`,
-      width: 1200,
-      crop: 'fit',
-    },
-    {
-      crop: 'scale',
-      width: 1280,
-      height: 720,
-    },
-  ]
+  // Encode text for URL - replace spaces with underscore for Cloudinary
+  const encodedText = textHook.replace(/\s+/g, '_').substring(0, 50)
 
-  // Use Cloudinary SDK or build manual URL with fetch parameter
-  const cloudinaryUrl = `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/fetch/l_text:Arial_bold_${styleParams.fontSize}_${styleParams.color}:${encodedText},g_center,y_0,co_${styleParams.color},b_solid_${styleParams.strokeWidth}_${styleParams.strokeColor},w_1200,c_fit/c_scale,w_1280,h_720,ar_16:9,c_fill/${imageUrl}`
+  // Build Cloudinary transformation URL
+  // Format: https://res.cloudinary.com/{cloud_name}/image/fetch/{transformations}/f_auto/{image_url}
+  const transformation = [
+    // Text overlay layer
+    `l_text:Arial_bold_${styleParams.fontSize}_${styleParams.color}:${encodedText}`,
+    // Position and style
+    'g_center',
+    'y_-20',
+    `bo_${styleParams.strokeWidth}px_solid_${styleParams.strokeColor}`,
+    'fl_layer_apply',
+    // Image sizing
+    'c_scale',
+    'w_1280',
+    'h_720',
+    'f_auto',
+    'q_auto',
+  ].join(',')
 
-  return cloudinaryUrl
+  // Use fetch URL to handle external images
+  return `https://res.cloudinary.com/${cloudName}/image/fetch/${transformation}/${imageUrl}`
 }
 
 const getStyleParams = (
