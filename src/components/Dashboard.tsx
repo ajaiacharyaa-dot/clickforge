@@ -15,6 +15,12 @@ interface Variation {
   ctr_score?: number
 }
 
+interface Toast {
+  id: string
+  message: string
+  type: 'success' | 'error' | 'info'
+}
+
 export const Dashboard: React.FC = () => {
   const [imageUrl, setImageUrl] = useState<string>('')
   const [videoTitle, setVideoTitle] = useState<string>('')
@@ -24,11 +30,23 @@ export const Dashboard: React.FC = () => {
   const [ctrScores, setCtrScores] = useState<Record<number, any>>({})
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(1)
+  const [toasts, setToasts] = useState<Toast[]>([])
+
+  // Toast notification helper
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    const id = Math.random().toString(36).substr(2, 9)
+    const toast: Toast = { id, message, type }
+    setToasts((prev) => [...prev, toast])
+
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id))
+    }, 4000)
+  }
 
   // Step 1: Generate hooks
   const handleGenerateHooks = async () => {
     if (!videoTitle.trim()) {
-      alert('Please enter a video title')
+      showToast('Please enter a video title', 'error')
       return
     }
 
@@ -40,13 +58,30 @@ export const Dashboard: React.FC = () => {
         body: JSON.stringify({ videoTitle }),
       })
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
       const data = await response.json()
-      if (data.success) {
+      if (data.success && data.data.hooks.length > 0) {
         setHooks(data.data.hooks)
         setStep(2)
+        showToast('✨ Text hooks generated!', 'success')
+      } else {
+        showToast('Failed to generate hooks. Please try again.', 'error')
       }
     } catch (error) {
-      alert('Failed to generate hooks')
+      console.error('Error generating hooks:', error)
+      showToast('Failed to generate hooks. Check your API keys.', 'error')
+      // Fallback hooks for testing
+      setHooks([
+        'YOU WONT BELIEVE',
+        'SHOCKING TRUTH',
+        'INSANE RESULTS',
+        'FINALLY EXPOSED',
+        'MUST WATCH',
+      ])
+      setStep(2)
     } finally {
       setLoading(false)
     }
@@ -55,12 +90,12 @@ export const Dashboard: React.FC = () => {
   // Step 2: Select hooks and generate thumbnails
   const handleGenerateThumbnails = async () => {
     if (selectedHooks.length !== 3) {
-      alert('Please select exactly 3 hooks')
+      showToast('Please select exactly 3 hooks', 'error')
       return
     }
 
     if (!imageUrl) {
-      alert('Please upload an image first')
+      showToast('Please upload an image first', 'error')
       return
     }
 
@@ -76,35 +111,60 @@ export const Dashboard: React.FC = () => {
         }),
       })
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
       const data = await response.json()
-      if (data.success) {
+      if (data.success && data.data.variations.length > 0) {
         setVariations(data.data.variations)
+        showToast('🎨 Thumbnails generated!', 'success')
 
         // Calculate CTR scores for each variation
         const scores: Record<number, any> = {}
         for (const variation of data.data.variations) {
-          const scoreResponse = await fetch('/api/calculate-ctr', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              text: variation.text_hook,
-              style: variation.style_applied,
-            }),
-          })
+          try {
+            const scoreResponse = await fetch('/api/calculate-ctr', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                text: variation.text_hook,
+                style: variation.style_applied,
+              }),
+            })
 
-          const scoreData = await scoreResponse.json()
-          if (scoreData.success) {
-            scores[variation.variant_number] = scoreData.data
+            if (scoreResponse.ok) {
+              const scoreData = await scoreResponse.json()
+              if (scoreData.success) {
+                scores[variation.variant_number] = scoreData.data
+              }
+            }
+          } catch (err) {
+            console.error('Error calculating CTR score:', err)
           }
         }
         setCtrScores(scores)
         setStep(3)
+      } else {
+        showToast('Failed to generate thumbnails', 'error')
       }
     } catch (error) {
-      alert('Failed to generate thumbnails')
+      console.error('Error generating thumbnails:', error)
+      showToast('Failed to generate thumbnails. Please try again.', 'error')
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleReset = () => {
+    setStep(1)
+    setImageUrl('')
+    setVideoTitle('')
+    setHooks([])
+    setSelectedHooks([])
+    setVariations([])
+    setCtrScores({})
+    showToast('Ready to create a new thumbnail!', 'info')
   }
 
   return (
@@ -118,6 +178,24 @@ export const Dashboard: React.FC = () => {
           <p className="text-lg text-gray-600">
             AI-powered YouTube thumbnail generator optimized for CTR
           </p>
+        </div>
+
+        {/* Toast Notifications */}
+        <div className="fixed top-4 right-4 z-50 space-y-2">
+          {toasts.map((toast) => (
+            <div
+              key={toast.id}
+              className={`px-4 py-3 rounded-lg shadow-lg text-white text-sm font-medium animate-pulse ${
+                toast.type === 'success'
+                  ? 'bg-green-500'
+                  : toast.type === 'error'
+                  ? 'bg-red-500'
+                  : 'bg-blue-500'
+              }`}
+            >
+              {toast.message}
+            </div>
+          ))}
         </div>
 
         {/* Progress indicator */}
@@ -184,7 +262,8 @@ export const Dashboard: React.FC = () => {
                     setStep(1)
                     setSelectedHooks([])
                   }}
-                  className="flex-1 bg-gray-300 text-gray-800 font-bold py-3 rounded-lg hover:bg-gray-400 transition"
+                  disabled={loading}
+                  className="flex-1 bg-gray-300 text-gray-800 font-bold py-3 rounded-lg hover:bg-gray-400 transition disabled:opacity-50"
                 >
                   ← Back
                 </button>
@@ -212,27 +291,23 @@ export const Dashboard: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {variations.map((variation) => (
                   <div key={variation.variant_number}>
-                    {ctrScores[variation.variant_number] && (
+                    {ctrScores[variation.variant_number] ? (
                       <CTRScore
                         score={ctrScores[variation.variant_number].ctrScore}
                         factors={ctrScores[variation.variant_number].factors}
                         textHook={variation.text_hook}
                       />
+                    ) : (
+                      <div className="bg-gray-100 rounded-lg p-4 text-center text-gray-500">
+                        Calculating score...
+                      </div>
                     )}
                   </div>
                 ))}
               </div>
 
               <button
-                onClick={() => {
-                  setStep(1)
-                  setImageUrl('')
-                  setVideoTitle('')
-                  setHooks([])
-                  setSelectedHooks([])
-                  setVariations([])
-                  setCtrScores({})
-                }}
+                onClick={handleReset}
                 className="w-full bg-gradient-viral text-white font-bold py-3 rounded-lg hover:opacity-90 transition"
               >
                 ✨ Create Another
