@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useCallback } from 'react'
-import Image from 'next/image'
 
 interface ImageUploadProps {
   onImageUpload: (imageUrl: string) => void
@@ -34,7 +33,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
       setError(null)
 
-      // Show preview immediately
+      // Show preview immediately using data URL
       const reader = new FileReader()
       reader.onloadend = () => {
         setPreview(reader.result as string)
@@ -59,6 +58,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         const data = await response.json()
         if (data.success && data.data?.imageUrl) {
           onImageUpload(data.data.imageUrl)
+          setPreview(data.data.imageUrl)
           setError(null)
         } else {
           setError('Upload failed. Please try again.')
@@ -75,9 +75,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
   return (
     <div className="w-full">
-      <label className="block text-sm font-semibold text-gray-700 mb-3">
-        Upload Image
-      </label>
+      <label className="block text-sm font-semibold text-gray-700 mb-3">Upload Image</label>
 
       <div className="relative w-full border-2 border-dashed border-primary rounded-lg p-4 sm:p-8 text-center hover:border-accent transition bg-white">
         <input
@@ -93,28 +91,16 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         <label htmlFor="image-upload" className="block cursor-pointer">
           {preview ? (
             <div className="space-y-3">
-              <div className="relative w-full h-48 sm:h-64 mx-auto">
-                <Image
-                  src={preview}
-                  alt="Preview"
-                  fill
-                  className="object-contain"
-                  priority
-                />
+              <div className="w-full h-48 sm:h-64 mx-auto overflow-hidden rounded">
+                <img src={preview} alt="Preview" className="object-contain w-full h-full" draggable={false} />
               </div>
-              <p className="text-xs sm:text-sm text-gray-600">
-                {uploading ? '⏳ Uploading...' : '✅ Image ready! Click to change'}
-              </p>
+              <p className="text-xs sm:text-sm text-gray-600">{uploading ? '⏳ Uploading...' : '✅ Image ready! Click to change'}</p>
             </div>
           ) : (
             <div className="py-4 sm:py-8">
               <p className="text-3xl sm:text-4xl mb-2">📸</p>
-              <p className="text-sm sm:text-base text-gray-700 font-semibold">
-                {uploading ? '⏳ Uploading...' : 'Click to upload'}
-              </p>
-              <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                or drag & drop
-              </p>
+              <p className="text-sm sm:text-base text-gray-700 font-semibold">{uploading ? '⏳ Uploading...' : 'Click to upload'}</p>
+              <p className="text-xs sm:text-sm text-gray-500 mt-1">or drag & drop</p>
               <p className="text-xs text-gray-400 mt-2">PNG, JPG up to 10MB</p>
             </div>
           )}
@@ -127,9 +113,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         )}
       </div>
 
-      {error && (
-        <p className="text-red-500 text-xs sm:text-sm mt-2">{error}</p>
-      )}
+      {error && <p className="text-red-500 text-xs sm:text-sm mt-2">{error}</p>}
     </div>
   )
 }
