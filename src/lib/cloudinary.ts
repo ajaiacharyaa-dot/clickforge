@@ -36,20 +36,22 @@ export const addTextToImage = (
   const styleParams = getStyleParams(style)
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
 
-  // Encode text for URL - replace spaces with underscore for Cloudinary
-  const encodedText = textHook.replace(/\s+/g, '_').substring(0, 50)
+  if (!cloudName) {
+    throw new Error('CLOUDINARY cloud name is not configured')
+  }
 
-  // Build Cloudinary transformation URL
-  // Format: https://res.cloudinary.com/{cloud_name}/image/fetch/{transformations}/f_auto/{image_url}
+  // Encode text for URL safely
+  const encodedText = encodeURIComponent(textHook).substring(0, 250)
+
+  // Build Cloudinary transformation string
   const transformation = [
-    // Text overlay layer
-    `l_text:Arial_bold_${styleParams.fontSize}_${styleParams.color}:${encodedText}`,
-    // Position and style
+    `l_text:Arial_bold_${styleParams.fontSize}:${encodedText}`,
+    // stroke / border is applied via outline / stroke params in Cloudinary transformations
+    `bo_${styleParams.strokeWidth}px_solid_rgb:${styleParams.strokeColor}`,
+    `co_rgb:${styleParams.color}`,
     'g_center',
     'y_-20',
-    `bo_${styleParams.strokeWidth}px_solid_${styleParams.strokeColor}`,
     'fl_layer_apply',
-    // Image sizing
     'c_scale',
     'w_1280',
     'h_720',
@@ -57,8 +59,10 @@ export const addTextToImage = (
     'q_auto',
   ].join(',')
 
-  // Use fetch URL to handle external images
-  return `https://res.cloudinary.com/${cloudName}/image/fetch/${transformation}/${imageUrl}`
+  // Encode the source image URL to avoid malformed fetch URLs
+  const encodedImageUrl = encodeURIComponent(imageUrl)
+
+  return `https://res.cloudinary.com/${cloudName}/image/fetch/${transformation}/${encodedImageUrl}`
 }
 
 const getStyleParams = (
