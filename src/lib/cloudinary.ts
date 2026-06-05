@@ -9,13 +9,13 @@ cloudinary.config({
 
 /**
  * Upload image to Cloudinary.
- * - If CLOUDINARY_API_KEY & CLOUDINARY_API_SECRET are present, perform a signed server-side upload via the SDK.
- * - Otherwise fall back to unsigned upload using the named upload preset `clickforge_thumbnails`.
+ * - If CLOUDINARY_API_KEY & CLOUDINARY_API_SECRET are present, use signed server-side upload via SDK.
+ * - Otherwise fall back to unsigned upload using upload preset `clickforge_thumbnails`.
  *
- * Returns: secure_url string on success, throws on failure.
+ * Returns: secure_url string on success; throws on failure.
  */
 export const uploadImage = async (file: File): Promise<string> => {
-  // If SDK credentials available, use uploader.upload_stream (server-side) for stability.
+  // Signed server-side upload if credentials available
   if (process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
     try {
       const buffer = Buffer.from(await file.arrayBuffer())
@@ -45,10 +45,10 @@ export const uploadImage = async (file: File): Promise<string> => {
     }
   }
 
-  // Fallback: unsigned upload via fetch to Cloudinary unsigned preset
+  // Unsigned fallback (ensure upload preset 'clickforge_thumbnails' exists)
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
   if (!cloudName) {
-    throw new Error('Cloudinary cloud name is not configured')
+    throw new Error('Cloudinary cloud name is not configured (NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME)')
   }
 
   try {
@@ -56,13 +56,10 @@ export const uploadImage = async (file: File): Promise<string> => {
     formData.append('file', file as any)
     formData.append('upload_preset', 'clickforge_thumbnails')
 
-    const resp = await fetch(
-      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-      {
-        method: 'POST',
-        body: formData,
-      }
-    )
+    const resp = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+      method: 'POST',
+      body: formData,
+    })
 
     const data = await resp.json()
     if (!resp.ok || !data?.secure_url) {
@@ -79,19 +76,13 @@ export const uploadImage = async (file: File): Promise<string> => {
 
 /**
  * Build a Cloudinary fetch URL overlaying text onto a remote image.
- * For stability we:
- * - Validate inputs
- * - URL-encode the source image
- * - Limit overlay text length
- * - Use well-formed Cloudinary transformation segments
+ * Uses cloudinary.url with an overlay transformation object to ensure correct encoding.
  *
- * Note: This returns a fetch URL that Cloudinary will resolve on-demand.
+ * Notes:
+ * - Keeps overlay simple: font, size, color, gravity, y offset, layer_apply flag.
+ * - Limits text length to avoid overly long URL segments.
  */
-export const addTextToImage = (
-  imageUrl: string,
-  textHook: string,
-  style: string
-): string => {
+export const addTextToImage = (imageUrl: string, textHook: string, style: string): string => {
   if (!imageUrl) throw new Error('imageUrl is required')
   if (!textHook) throw new Error('textHook is required')
 
@@ -100,54 +91,61 @@ export const addTextToImage = (
 
   const styleParams = getStyleParams(style)
 
-  // Limit and sanitize text
-  const safeText = String(textHook).slice(0, 200)
-  const encodedText = encodeURIComponent(safeText)
+  // Sanitize and limit text
+  const safeText = String(textHook).slice(0, 180)
 
-  // Build overlay text; choose a generic web-safe font family + size. Cloudinary supports `Arial` fallback.
-  // Format: l_text:Arial_bold_72:Hello%20World
-  const overlay = `l_text:Arial_bold_${styleParams.fontSize}:${encodedText}`
+  // Build overlay transformation using SDK-friendly objects.
+  // We avoid overly complex stroke or bo params to reduce fragile URL construction.
+  const overlayLayer: any = {
+    overlay: {
+      font_family: styleParams.fontFamily || 'Arial',
+      font_size: styleParams.fontSize,
+      // Use bold weight if requested; else default
+      font_weight: styleParams.fontWeight || undefined,
+      text: safeText,
+    },
+    color: styleParams.color ? `#${styleParams.color.replace(/^#/, '')}` : undefined,
+    gravity: 'center',
+    y: -20,
+    flags: 'layer_apply',
+  }
 
-  // Border / stroke param
-  const bo = `bo_${styleParams.strokeWidth}px_solid_rgb:${styleParams.strokeColor}`
+  // Clean undefined keys
+  const cleanedOverlay = Object.keys(overlayLayer).reduce((acc: any, key) => {
+    const val = (overlayLayer as any)[key]
+    if (val !== undefined) acc[key] = val
+    return acc
+  }, {})
 
-  // Color param
-  const co = `co_rgb:${styleParams.color}`
-
-  // Positioning & layer apply flags
-  const position = ['g_center', 'y_-20', 'fl_layer_apply']
-
-  // Final transformations (order matters)
-  const transformationParts = [
-    overlay,
-    bo,
-    co,
-    ...position,
-    'c_scale',
-    'w_1280',
-    'h_720',
-    'f_auto',
-    'q_auto',
+  const transformation = [
+    cleanedOverlay,
+    {
+      width: 1280,
+      height: 720,
+      crop: 'scale',
+    },
+    { fetch_format: 'auto' },
+    { quality: 'auto' },
   ]
 
-  // Join with commas and ensure transformation string is safe in a URL path segment
-  const transformation = transformationParts.join(',')
+  // Use cloudinary.url to build a properly encoded fetch URL
+  // `type: 'fetch'` tells Cloudinary to fetch the remote source URL (imageUrl)
+  const generated = cloudinary.url(imageUrl, {
+    type: 'fetch',
+    resource_type: 'image',
+    transformation,
+  })
 
-  const encodedSource = encodeURIComponent(imageUrl)
-
-  // Return a Cloudinary fetch URL
-  return `https://res.cloudinary.com/${cloudName}/image/fetch/${transformation}/${encodedSource}`
+  return generated
 }
 
 const getStyleParams = (style: string) => {
-  const styles: Record<
-    string,
-    { fontSize: number; color: string; strokeColor: string; strokeWidth: number }
-  > = {
-    'bold-red': { fontSize: 80, color: 'FF0000', strokeColor: 'FFFFFF', strokeWidth: 3 },
-    'neon-gradient': { fontSize: 90, color: 'FFFF00', strokeColor: '00FFFF', strokeWidth: 2 },
-    'shadow-dark': { fontSize: 75, color: 'FFFFFF', strokeColor: '000000', strokeWidth: 5 },
-    'bright-yellow': { fontSize: 85, color: 'FFFF00', strokeColor: '000000', strokeWidth: 3 },
+  // Minimal safe style definitions — avoids stroke/border to reduce risk of malformed transforms.
+  const styles: Record<string, { fontFamily?: string; fontSize: number; fontWeight?: string; color: string }> = {
+    'bold-red': { fontFamily: 'Arial', fontSize: 80, fontWeight: 'bold', color: 'FF0000' },
+    'neon-gradient': { fontFamily: 'Arial', fontSize: 90, fontWeight: 'bold', color: 'FFFF00' },
+    'shadow-dark': { fontFamily: 'Arial', fontSize: 75, fontWeight: 'bold', color: 'FFFFFF' },
+    'bright-yellow': { fontFamily: 'Arial', fontSize: 85, fontWeight: 'bold', color: 'FFFF00' },
   }
 
   return styles[style] || styles['bold-red']
