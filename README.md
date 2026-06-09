@@ -1,357 +1,159 @@
-🚀 ClickForge
+🚀 ClickForge — The AI Creator Operating System
 
-# The AI Creator Operating System
+[![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
+[![Node.js](https://img.shields.io/badge/node-%3E=_18-brightgreen)](https://nodejs.org)
 
-ClickForge is an AI-powered platform designed to help creators, entrepreneurs, freelancers, students, researchers, and businesses create, optimize, publish, and scale digital content faster.
+The AI Creator Operating System — helping creators, entrepreneurs, and teams research, create, optimize, publish, and scale digital content faster.
 
-Our mission is simple:
-
-«Enable one person to perform the work of an entire digital company using AI.»
-
----
-
-🌍 Vision
-
-Today's creators use dozens of disconnected tools:
-
-- ChatGPT
-- Canva
-- Notion
-- Google
-- TubeBuddy
-- Analytics tools
-- Social schedulers
-- Research platforms
-
-ClickForge brings these workflows together into one unified AI-powered operating system.
-
-Instead of switching between tools, users interact with a single AI assistant that helps them research, create, optimize, publish, and grow.
+Tagline: Enable one person to perform the work of an entire digital company using AI.
 
 ---
 
-🎯 Current Features
+## Quick badges & status
 
-Content Creation
-
-- AI Thumbnail Generation
-- Viral Hook Generation
-- CTR Optimization
-- Multiple Thumbnail Variations
-- Style-Based Thumbnail Testing
-- Thumbnail Preview & Download
-
-AI Writing
-
-- Title Generation
-- Description Generation
-- Hashtag Generation
-- Content Planning
-- Script Generation
-
-Analytics
-
-- CTR Prediction
-- Performance Scoring
-- Thumbnail Comparison
-- Content Optimization
+- Project: ClickForge
+- Focus: Thumbnail & Content MVP (Phase 1)
 
 ---
 
-🧠 Future Vision
-
-ClickForge is being built toward a much larger platform.
-
-Jarvis AI Assistant
-
-A conversational AI that can:
-
-- Research topics
-- Generate content
-- Execute workflows
-- Manage projects
-- Coordinate AI agents
-
-Users should be able to type:
-
-«Grow my channel»
-
-and ClickForge should handle planning and execution.
-
----
-
-Research Engine
-
-Research any topic with:
-
-- Source collection
-- AI summaries
-- Trend analysis
-- Competitor analysis
-- Citation support
-
-Goal:
-
-Provide research capabilities comparable to modern AI search assistants.
-
----
-
-Social Media Operating System
-
-Manage:
-
-- YouTube
-- Instagram
-- TikTok
-- X
-- Facebook
-- LinkedIn
-
-Features:
-
-- Scheduling
-- Publishing
-- Analytics
-- Comment management
-- Content calendars
-
----
-
-Creator Intelligence
-
-Analyze:
-
-- Competitors
-- Viral content
-- Trends
-- Keywords
-- Audience behavior
-
-Receive actionable recommendations based on real data.
-
----
-
-Marketplace
-
-Buy and sell:
-
-- Templates
-- Services
-- Courses
-- AI workflows
-- Digital products
-
----
-
-Jobs Platform
-
-Connect:
-
-- Creators
-- Freelancers
-- Agencies
-- Businesses
-
-Find opportunities and build teams directly inside ClickForge.
-
----
-
-AI Agent Workforce
-
-Specialized AI agents:
-
-- Research Agent
-- Thumbnail Agent
-- SEO Agent
-- Script Agent
-- Marketing Agent
-- Growth Agent
-- Coding Agent
-
-All coordinated through Jarvis.
-
----
-
-⚡ Why ClickForge Exists
-
-Most creators spend more time managing tools than creating content.
-
-ClickForge exists to reduce friction and automate repetitive work.
-
-Our goal is to reduce creator workload by up to 90% while improving output quality and consistency.
-
----
-
-🏗 Technology Stack
-
-Frontend
-
-- Next.js
-- React
-- TypeScript
-- Tailwind CSS
-
-Backend
-
-- Next.js API Routes
-- Node.js
-
-AI
-
-- OpenAI
-- AI Workflow Orchestration
-
-Media
-
-- Cloudinary
-
-Database
-
-- Supabase (optional)
-
----
-
-🚀 Getting Started
+## Getting started (short)
 
 Requirements
-
 - Node.js 18+
-- Cloudinary Account
-- OpenAI API Key
+- Cloudinary account (for production transforms)
+- OpenAI API Key (for hook/title generation)
 
-Installation
+Clone & install
 
 ```bash
 git clone https://github.com/ajaiacharyaa-dot/clickforge.git
-
 cd clickforge
-
-npm install
+npm ci
 ```
 
-Create ".env.local"
+Create `.env.local` (example values are in `.env.example`)
 
-```
+```env
 NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name
-
 CLOUDINARY_API_KEY=your_api_key
-
 CLOUDINARY_API_SECRET=your_api_secret
-
-OPENAI_API_KEY=your_openai_key
+OPENAI_API_KEY=sk-...
 ```
 
-Start development server:
+Run dev server
 
 ```bash
 npm run dev
 ```
 
-Open:
-
-http://localhost:3000
+Open http://localhost:3000
 
 ---
 
-📡 API Endpoints
+## Compact API examples (curl)
 
-Upload Image
+1) Upload an image
 
-POST /api/upload
+```bash
+curl -s -w "\nHTTP_STATUS:%{http_code}\n" -F "file=@/full/path/to/test.jpg" http://localhost:3000/api/upload -o upload.json
+cat upload.json
+```
 
-Generate Hooks
+Response example
+```json
+{
+  "success": true,
+  "data": {
+    "imageUrl": "https://res.cloudinary.com/your-cloud/image/upload/v123/.../test.jpg"
+  }
+}
+```
 
-POST /api/generate-hooks
+2) Generate hooks (from a title)
 
-Generate Thumbnail Variations
+```bash
+curl -s -X POST -H "Content-Type: application/json" -d '{"videoTitle":"My awesome video"}' http://localhost:3000/api/generate-hooks | jq .
+```
 
-POST /api/generate-thumbnail
+Response example
+```json
+{
+  "success": true,
+  "data": { "hooks": ["YOU WONT BELIEVE","SHOCKING TRUTH", ...] }
+}
+```
 
-Calculate CTR Score
+3) Generate thumbnail variations (use an imageUrl from upload or a public image)
 
-POST /api/calculate-ctr
+```bash
+curl -s -X POST -H "Content-Type: application/json" \
+  -d '{"imageUrl":"https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png","hooks":["INSANE RESULT"],"styles":["bold-red"]}' \
+  http://localhost:3000/api/generate-thumbnail | jq .
+```
 
----
+Response example
+```json
+{
+  "success": true,
+  "data": {
+    "variations": [
+      {
+        "variant_number": 1,
+        "text_hook": "INSANE RESULT",
+        "style_applied": "bold-red",
+        "image_url": "https://res.cloudinary.com/.../image/fetch/...."
+      }
+    ]
+  }
+}
+```
 
-🛣 Roadmap
+4) Calculate CTR score
 
-Phase 1
+```bash
+curl -s -X POST -H "Content-Type: application/json" -d '{"text":"INSANE RESULT","style":"bold-red"}' http://localhost:3000/api/calculate-ctr | jq .
+```
 
-- Stable Thumbnail Engine
-- Hook Generator
-- CTR Optimization
-- MVP Launch
-
-Phase 2
-
-- Title Generator
-- Description Generator
-- Script Generator
-- Content Workflows
-
-Phase 3
-
-- Jarvis AI Assistant
-- Research Engine
-- Competitor Analysis
-
-Phase 4
-
-- Social Media Automation
-- Publishing System
-- Analytics Dashboard
-
-Phase 5
-
-- Marketplace
-- Jobs Platform
-- Multi-Agent AI Workforce
-
----
-
-🤝 Contributing
-
-Contributions are welcome.
-
-Please:
-
-1. Fork the repository
-2. Create a feature branch
-3. Submit focused pull requests
-4. Include testing notes
-
-Keep changes small, maintainable, and production-focused.
-
----
-
-⚖️ Legal Notice
-
-ClickForge is provided "as is" without warranties of any kind.
-
-Users are responsible for:
-
-- Compliance with platform policies
-- Copyright compliance
-- Content accuracy
-- Appropriate use of AI-generated outputs
-
-Third-party services such as OpenAI, Cloudinary, Supabase, YouTube, and other integrations remain subject to their own terms of service and privacy policies.
+Response example
+```json
+{ "success": true, "data": { "ctrScore": 72, "factors": { ... } } }
+```
 
 ---
 
-📄 License
+## CI smoke-test script
 
-MIT License
+A lightweight smoke-test is included at `scripts/smoke_test.sh`. It calls `/api/generate-thumbnail` with a public image and validates the returned image URL loads with HTTP 200 and an image content-type. It is intended for local CI or manual testing. See `scripts/smoke_test.sh --help`.
+
+Run it locally:
+
+```bash
+bash scripts/smoke_test.sh
+```
+
+Or provide a custom image URL:
+
+```bash
+SAMPLE_IMAGE_URL="https://example.com/my.jpg" bash scripts/smoke_test.sh
+```
 
 ---
 
-🌟 End Goal
+## Development principles
 
-A user should be able to enter:
+- Never ship placeholder features: every feature must work end-to-end.
+- Keep changes small, testable, and revertible.
+- Prefer Node server runtime for cloudinary/SDK operations (not Edge).
+- Instrument errors and surface Cloudinary transformation errors in logs.
 
-«"Grow my business."»
+---
 
-and ClickForge should research, plan, create, optimize, publish, analyze, and automate the work through AI-powered systems.
+## Contributing
 
-This is the future of ClickForge.
+Fork → branch → small PR → tests. Keep commits focused and include validation steps.
 
-Build once. Create forever.
+---
+
+## License
+
+MIT
