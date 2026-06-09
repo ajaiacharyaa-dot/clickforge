@@ -1,153 +1,357 @@
-# ClickForge — AI Creator Operating System (Vision 2030)
+🚀 ClickForge
 
-ClickForge is an AI Operating System for creators, businesses, freelancers, students, researchers, and entrepreneurs. Our mission is to enable one person to perform the work of an entire digital company using AI — from research and content creation to publishing, analytics, and business operations.
+# The AI Creator Operating System
 
-This repository contains the first vertical of ClickForge: an AI-powered content engine that helps creators generate high-CTR YouTube thumbnails, hooks, and related content artifacts. While thumbnails are a focused feature today, ClickForge is designed and architected to grow into a complete AI OS over time.
+ClickForge is an AI-powered platform designed to help creators, entrepreneurs, freelancers, students, researchers, and businesses create, optimize, publish, and scale digital content faster.
 
----
+Our mission is simple:
 
-## Core Mission
-
-Enable one person to perform the work of an entire digital company using AI.
-
-ClickForge helps users:
-- Research topics and compile sources
-- Create content (thumbnails, titles, scripts, short-form clips)
-- Build brands and businesses
-- Manage social publishing and analytics
-- Learn and teach through AI-driven curricula
-- Automate workflows and delegate to AI agents
-
-We prioritize working software, clean architecture, modular components, and incremental delivery aligned to the long-term vision.
+«Enable one person to perform the work of an entire digital company using AI.»
 
 ---
 
-## Current Focus (MVP)
+🌍 Vision
 
-1. Fix thumbnail generation pipeline (upload → generate hooks → generate thumbnails → preview → download)
-2. Complete the content generation workflow (hooks, titles, descriptions, scripts)
-3. Launch an MVP and get real users
-4. Collect data and iterate toward Jarvis (the conversational task-execution core)
+Today's creators use dozens of disconnected tools:
 
-This repository implements the thumbnail/content MVP and the APIs required to support it.
+- ChatGPT
+- Canva
+- Notion
+- Google
+- TubeBuddy
+- Analytics tools
+- Social schedulers
+- Research platforms
+
+ClickForge brings these workflows together into one unified AI-powered operating system.
+
+Instead of switching between tools, users interact with a single AI assistant that helps them research, create, optimize, publish, and grow.
 
 ---
 
-## Quick Start (developer)
+🎯 Current Features
 
-Prerequisites
+Content Creation
+
+- AI Thumbnail Generation
+- Viral Hook Generation
+- CTR Optimization
+- Multiple Thumbnail Variations
+- Style-Based Thumbnail Testing
+- Thumbnail Preview & Download
+
+AI Writing
+
+- Title Generation
+- Description Generation
+- Hashtag Generation
+- Content Planning
+- Script Generation
+
+Analytics
+
+- CTR Prediction
+- Performance Scoring
+- Thumbnail Comparison
+- Content Optimization
+
+---
+
+🧠 Future Vision
+
+ClickForge is being built toward a much larger platform.
+
+Jarvis AI Assistant
+
+A conversational AI that can:
+
+- Research topics
+- Generate content
+- Execute workflows
+- Manage projects
+- Coordinate AI agents
+
+Users should be able to type:
+
+«Grow my channel»
+
+and ClickForge should handle planning and execution.
+
+---
+
+Research Engine
+
+Research any topic with:
+
+- Source collection
+- AI summaries
+- Trend analysis
+- Competitor analysis
+- Citation support
+
+Goal:
+
+Provide research capabilities comparable to modern AI search assistants.
+
+---
+
+Social Media Operating System
+
+Manage:
+
+- YouTube
+- Instagram
+- TikTok
+- X
+- Facebook
+- LinkedIn
+
+Features:
+
+- Scheduling
+- Publishing
+- Analytics
+- Comment management
+- Content calendars
+
+---
+
+Creator Intelligence
+
+Analyze:
+
+- Competitors
+- Viral content
+- Trends
+- Keywords
+- Audience behavior
+
+Receive actionable recommendations based on real data.
+
+---
+
+Marketplace
+
+Buy and sell:
+
+- Templates
+- Services
+- Courses
+- AI workflows
+- Digital products
+
+---
+
+Jobs Platform
+
+Connect:
+
+- Creators
+- Freelancers
+- Agencies
+- Businesses
+
+Find opportunities and build teams directly inside ClickForge.
+
+---
+
+AI Agent Workforce
+
+Specialized AI agents:
+
+- Research Agent
+- Thumbnail Agent
+- SEO Agent
+- Script Agent
+- Marketing Agent
+- Growth Agent
+- Coding Agent
+
+All coordinated through Jarvis.
+
+---
+
+⚡ Why ClickForge Exists
+
+Most creators spend more time managing tools than creating content.
+
+ClickForge exists to reduce friction and automate repetitive work.
+
+Our goal is to reduce creator workload by up to 90% while improving output quality and consistency.
+
+---
+
+🏗 Technology Stack
+
+Frontend
+
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+
+Backend
+
+- Next.js API Routes
+- Node.js
+
+AI
+
+- OpenAI
+- AI Workflow Orchestration
+
+Media
+
+- Cloudinary
+
+Database
+
+- Supabase (optional)
+
+---
+
+🚀 Getting Started
+
+Requirements
+
 - Node.js 18+
-- A Cloudinary account (for image hosting and transformations)
-- An OpenAI API key (for hook/title generation)
+- Cloudinary Account
+- OpenAI API Key
 
-Local setup
-
-1. Clone:
+Installation
 
 ```bash
 git clone https://github.com/ajaiacharyaa-dot/clickforge.git
+
 cd clickforge
+
+npm install
 ```
 
-2. Install:
+Create ".env.local"
 
-```bash
-npm ci
 ```
-
-3. Create `.env.local` with these values (copy `.env.example` as a starting point):
-
-```env
 NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name
+
 CLOUDINARY_API_KEY=your_api_key
+
 CLOUDINARY_API_SECRET=your_api_secret
-OPENAI_API_KEY=sk-...
+
+OPENAI_API_KEY=your_openai_key
 ```
 
-4. Run the app:
+Start development server:
 
 ```bash
 npm run dev
 ```
 
-Open http://localhost:3000 and follow the three-step flow: Upload → Generate Hooks → Generate Thumbnails.
+Open:
+
+http://localhost:3000
 
 ---
 
-## Architecture Overview
+📡 API Endpoints
 
-ClickForge is designed as a modular Next.js application with a clear separation of concerns:
+Upload Image
 
-- Frontend: Next.js (app router), React, TypeScript, Tailwind CSS
-- Server: Next.js API routes (server runtime — Node) for image processing and AI orchestration
-- Image Processing: Cloudinary for uploading and server-side fetch overlays
-- AI: OpenAI (hooks/title/script generation) with graceful fallbacks when API keys are missing
-- Persistence: Optional Supabase integration for saving user artifacts and metrics
+POST /api/upload
 
-Key modules (src/lib):
-- cloudinary.ts — Image upload + overlay generation
-- ai.ts — OpenAI calls and parsers (hook generation)
-- api routes: upload, generate-hooks, generate-thumbnail, calculate-ctr
+Generate Hooks
 
-Design principles:
-- Keep server-side heavy operations in Node (not edge) because of SDK and binary APIs.
-- Use Cloudinary for transformations; cache results via CDN.
-- Keep business logic small and testable.
+POST /api/generate-hooks
+
+Generate Thumbnail Variations
+
+POST /api/generate-thumbnail
+
+Calculate CTR Score
+
+POST /api/calculate-ctr
 
 ---
 
-## API Endpoints (developer reference)
+🛣 Roadmap
 
-- `POST /api/upload` — upload an image (FormData: file)
-- `POST /api/generate-hooks` — generate text hooks (body: { videoTitle })
-- `POST /api/generate-thumbnail` — produce 3 thumbnail variations (body: { imageUrl, hooks: string[], styles: string[] })
-- `POST /api/calculate-ctr` — compute a CTR score for a hook+style pair
+Phase 1
 
-Responses are JSON with `{ success: boolean, data: ... }` or errors with explanatory messages.
+- Stable Thumbnail Engine
+- Hook Generator
+- CTR Optimization
+- MVP Launch
 
----
+Phase 2
 
-## Testing & Validation
+- Title Generator
+- Description Generator
+- Script Generator
+- Content Workflows
 
-- Run `npm run build` to catch TypeScript/build issues.
-- Use `curl` or the UI to exercise API endpoints.
-- Thumbnail generation must produce valid Cloudinary fetch URLs that render as 1280x720 images.
+Phase 3
 
-When modifying the Cloudinary overlay code keep the following in mind:
-- Use a single font token in `font_family` (no comma-separated fallback lists)
-- Avoid unsupported overlay properties that some Cloudinary accounts reject
-- Validate the generated URL by opening it in a browser — Cloudinary error pages help diagnose malformed transformations
+- Jarvis AI Assistant
+- Research Engine
+- Competitor Analysis
 
----
+Phase 4
 
-## Contributing
+- Social Media Automation
+- Publishing System
+- Analytics Dashboard
 
-We follow a pragmatic workflow:
-- Keep changes focused and small
-- Prioritize working, tested changes
-- Add/update tests when introducing new behaviors
+Phase 5
 
-To contribute:
-1. Fork the repo
-2. Create a branch `feature/your-feature`
-3. Make changes with small, atomic commits
-4. Open a pull request with a description and testing notes
+- Marketplace
+- Jobs Platform
+- Multi-Agent AI Workforce
 
 ---
 
-## Roadmap (high level)
+🤝 Contributing
 
-- Short-term (MVP): robust thumbnail pipeline, content generation, MVP launch
-- Mid-term: content engine (script, voice, short-form generator), A/B testing and CTR model
-- Long-term: Jarvis core (multi-agent orchestration), Research Engine, Social OS, Marketplace, Jobs & Business Builder
+Contributions are welcome.
+
+Please:
+
+1. Fork the repository
+2. Create a feature branch
+3. Submit focused pull requests
+4. Include testing notes
+
+Keep changes small, maintainable, and production-focused.
 
 ---
 
-## License & Support
+⚖️ Legal Notice
 
-- License: MIT
-- Support: support@clickforge.dev
+ClickForge is provided "as is" without warranties of any kind.
+
+Users are responsible for:
+
+- Compliance with platform policies
+- Copyright compliance
+- Content accuracy
+- Appropriate use of AI-generated outputs
+
+Third-party services such as OpenAI, Cloudinary, Supabase, YouTube, and other integrations remain subject to their own terms of service and privacy policies.
 
 ---
 
-Made with ❤️ by the ClickForge team
+📄 License
+
+MIT License
+
+---
+
+🌟 End Goal
+
+A user should be able to enter:
+
+«"Grow my business."»
+
+and ClickForge should research, plan, create, optimize, publish, analyze, and automate the work through AI-powered systems.
+
+This is the future of ClickForge.
+
+Build once. Create forever.
