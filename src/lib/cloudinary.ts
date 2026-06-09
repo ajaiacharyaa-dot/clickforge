@@ -98,6 +98,9 @@ export const addTextToImage = (imageUrl: string, textHook: string, style: string
   // Sanitize and limit text length
   const safeText = String(textHook).trim().slice(0, 160)
 
+  // Determine a safe single font family token (remove comma-separated fallbacks)
+  const fontFamilySafe = (String(styleParams.fontFamily || 'Impact')).split(',')[0].trim()
+
   // Determine dynamic font size for mobile-first readability
   const base = styleParams.fontSize || 80
   const len = safeText.length
@@ -127,9 +130,8 @@ export const addTextToImage = (imageUrl: string, textHook: string, style: string
   // 1) Stroke layer: black text larger than main text
   transformations.push({
     overlay: {
-      font_family: styleParams.fontFamily || 'Impact',
+      font_family: fontFamilySafe,
       font_size: fontSize + strokeSize,
-      font_weight: styleParams.fontWeight || 'bold',
       text: safeText,
     },
     color: '#000000',
@@ -141,9 +143,8 @@ export const addTextToImage = (imageUrl: string, textHook: string, style: string
   // 2) Shadow layer: slightly offset for depth (we use black and offset; opacity control may require raw_transformation if needed)
   transformations.push({
     overlay: {
-      font_family: styleParams.fontFamily || 'Impact',
+      font_family: fontFamilySafe,
       font_size: fontSize,
-      font_weight: styleParams.fontWeight || 'bold',
       text: safeText,
     },
     color: '#000000',
@@ -156,9 +157,8 @@ export const addTextToImage = (imageUrl: string, textHook: string, style: string
   const textColor = String(styleParams.color || 'FFFFFF').replace(/^#/, '')
   transformations.push({
     overlay: {
-      font_family: styleParams.fontFamily || 'Impact',
+      font_family: fontFamilySafe,
       font_size: fontSize,
-      font_weight: styleParams.fontWeight || 'bold',
       text: safeText,
     },
     color: `#${textColor}`,
