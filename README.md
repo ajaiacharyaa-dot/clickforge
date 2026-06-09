@@ -1,159 +1,268 @@
-🚀 ClickForge — The AI Creator Operating System
+# ClickForge — The AI Operating System
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
-[![Node.js](https://img.shields.io/badge/node-%3E=_18-brightgreen)](https://nodejs.org)
+## Mission
 
-The AI Creator Operating System — helping creators, entrepreneurs, and teams research, create, optimize, publish, and scale digital content faster.
+Build the world's first AI Operating System that enables one person to perform the work of an entire company.
 
-Tagline: Enable one person to perform the work of an entire digital company using AI.
+ClickForge is not a thumbnail generator.
 
----
-
-## Quick badges & status
-
-- Project: ClickForge
-- Focus: Thumbnail & Content MVP (Phase 1)
+ClickForge is an ecosystem of AI agents, tools, knowledge systems, automation workflows, and business infrastructure designed to help anyone create, learn, build, sell, automate, and scale from a single platform.
 
 ---
 
-## Getting started (short)
+## Vision
 
-Requirements
-- Node.js 18+
-- Cloudinary account (for production transforms)
-- OpenAI API Key (for hook/title generation)
+A future where a creator, entrepreneur, student, freelancer, researcher, or startup founder can launch and run an entire digital business from one command.
 
-Clone & install
+Example:
 
-```bash
-git clone https://github.com/ajaiacharyaa-dot/clickforge.git
-cd clickforge
-npm ci
-```
+"Build an AI education business."
 
-Create `.env.local` (example values are in `.env.example`)
+ClickForge will:
 
-```env
-NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-OPENAI_API_KEY=sk-...
-```
+- Research the market
+- Analyze competitors
+- Generate business plans
+- Create branding
+- Build websites
+- Generate content
+- Create videos
+- Generate voiceovers
+- Manage social media
+- Handle customer support
+- Build sales funnels
+- Run marketing campaigns
+- Track analytics
+- Manage teams and AI agents
 
-Run dev server
-
-```bash
-npm run dev
-```
-
-Open http://localhost:3000
+All from one workspace.
 
 ---
 
-## Compact API examples (curl)
+## Core Systems
 
-1) Upload an image
+### Jarvis OS
 
-```bash
-curl -s -w "\nHTTP_STATUS:%{http_code}\n" -F "file=@/full/path/to/test.jpg" http://localhost:3000/api/upload -o upload.json
-cat upload.json
-```
+The central intelligence layer.
 
-Response example
-```json
-{
-  "success": true,
-  "data": {
-    "imageUrl": "https://res.cloudinary.com/your-cloud/image/upload/v123/.../test.jpg"
-  }
-}
-```
+Capabilities:
 
-2) Generate hooks (from a title)
+- Natural language control
+- Multi-agent execution
+- Deep research
+- Long-term memory
+- Task planning
+- Workflow automation
+- Business operations
 
-```bash
-curl -s -X POST -H "Content-Type: application/json" -d '{"videoTitle":"My awesome video"}' http://localhost:3000/api/generate-hooks | jq .
-```
+Example:
 
-Response example
-```json
-{
-  "success": true,
-  "data": { "hooks": ["YOU WONT BELIEVE","SHOCKING TRUTH", ...] }
-}
-```
+"Research the AI video market and create a launch plan."
 
-3) Generate thumbnail variations (use an imageUrl from upload or a public image)
-
-```bash
-curl -s -X POST -H "Content-Type: application/json" \
-  -d '{"imageUrl":"https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png","hooks":["INSANE RESULT"],"styles":["bold-red"]}' \
-  http://localhost:3000/api/generate-thumbnail | jq .
-```
-
-Response example
-```json
-{
-  "success": true,
-  "data": {
-    "variations": [
-      {
-        "variant_number": 1,
-        "text_hook": "INSANE RESULT",
-        "style_applied": "bold-red",
-        "image_url": "https://res.cloudinary.com/.../image/fetch/...."
-      }
-    ]
-  }
-}
-```
-
-4) Calculate CTR score
-
-```bash
-curl -s -X POST -H "Content-Type: application/json" -d '{"text":"INSANE RESULT","style":"bold-red"}' http://localhost:3000/api/calculate-ctr | jq .
-```
-
-Response example
-```json
-{ "success": true, "data": { "ctrScore": 72, "factors": { ... } } }
-```
+Jarvis executes the complete workflow.
 
 ---
 
-## CI smoke-test script
+### ResearchForge
 
-A lightweight smoke-test is included at `scripts/smoke_test.sh`. It calls `/api/generate-thumbnail` with a public image and validates the returned image URL loads with HTTP 200 and an image content-type. It is intended for local CI or manual testing. See `scripts/smoke_test.sh --help`.
+Research engine powered by AI.
 
-Run it locally:
+Features:
 
-```bash
-bash scripts/smoke_test.sh
-```
+- Web research
+- Competitor analysis
+- Trend discovery
+- Market intelligence
+- Knowledge synthesis
+- Source verification
 
-Or provide a custom image URL:
+Goal:
 
-```bash
-SAMPLE_IMAGE_URL="https://example.com/my.jpg" bash scripts/smoke_test.sh
-```
-
----
-
-## Development principles
-
-- Never ship placeholder features: every feature must work end-to-end.
-- Keep changes small, testable, and revertible.
-- Prefer Node server runtime for cloudinary/SDK operations (not Edge).
-- Instrument errors and surface Cloudinary transformation errors in logs.
+Provide Google-level discovery with AI-level understanding.
 
 ---
 
-## Contributing
+### ContentForge
 
-Fork → branch → small PR → tests. Keep commits focused and include validation steps.
+AI content generation system.
+
+Create:
+
+- Titles
+- Hooks
+- Scripts
+- Blogs
+- Newsletters
+- Sales copy
+- Landing pages
+- Email campaigns
+- Social content
 
 ---
 
-## License
+### ThumbnailForge
 
-MIT
+Generate high-CTR thumbnails.
+
+Features:
+
+- AI hooks
+- CTR scoring
+- A/B testing
+- Style optimization
+- Face zoom
+- Brand templates
+
+---
+
+### VideoForge
+
+AI video creation platform.
+
+Create:
+
+- Long-form videos
+- Shorts
+- Reels
+- Tutorials
+- Product videos
+- Marketing videos
+
+Capabilities:
+
+- AI editing
+- Auto captions
+- Auto clipping
+- AI voiceovers
+- Script-to-video generation
+
+---
+
+### VoiceForge
+
+Voice generation system.
+
+Features:
+
+- Text-to-speech
+- Voice cloning
+- Podcast generation
+- Audiobook generation
+- Multi-language support
+
+---
+
+### SocialForge
+
+Social media operating system.
+
+Connect:
+
+- YouTube
+- Instagram
+- TikTok
+- X
+- LinkedIn
+- Facebook
+
+Capabilities:
+
+- Auto posting
+- Scheduling
+- Analytics
+- AI replies
+- Auto DM workflows
+- Trend monitoring
+
+---
+
+### StoreForge
+
+Commerce infrastructure.
+
+Sell:
+
+- Products
+- Services
+- Courses
+- Memberships
+- Software
+- Digital downloads
+
+Features:
+
+- AI storefront creation
+- Checkout systems
+- Sales funnels
+- Customer management
+
+---
+
+### LearnForge
+
+AI education platform.
+
+Capabilities:
+
+- Personalized learning
+- AI tutors
+- Interactive lessons
+- Skill roadmaps
+- Progress tracking
+
+---
+
+### WorkForge
+
+Opportunity marketplace.
+
+Users can:
+
+- Find jobs
+- Hire talent
+- Sell services
+- Build teams
+- Work with AI agents
+
+---
+
+### AgentForge
+
+Create and deploy custom AI agents.
+
+Examples:
+
+- Research Agent
+- Marketing Agent
+- Sales Agent
+- Content Agent
+- Support Agent
+- Coding Agent
+
+---
+
+## Long-Term Goal
+
+Create the world's most powerful AI Operating System.
+
+One platform.
+
+One login.
+
+One command.
+
+Unlimited execution.
+
+---
+
+## Philosophy
+
+No excuses.
+
+Build.
+
+Ship.
+
+Improve.
+
+Repeat.
