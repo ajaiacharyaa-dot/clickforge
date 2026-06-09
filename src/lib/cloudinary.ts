@@ -76,11 +76,15 @@ export const uploadImage = async (file: File): Promise<string> => {
 
 /**
  * Build a Cloudinary fetch URL overlaying text onto a remote image.
- * Uses cloudinary.url with an overlay transformation object to ensure correct encoding.
- *
- * Notes:
- * - Keeps overlay simple: font, size, color, gravity, y offset, layer_apply flag.
- * - Limits text length to avoid overly long URL segments.
+ * Focused on thumbnail quality improvements:
+ * - Mobile-first larger text
+ * - Thick black stroke via an underlay text layer
+ * - Subtle shadow via offset underlay
+ * - Top/bottom positioning via gravity
+ * - Keep text inside safe boundaries by scaling font size based on text length
+ * - High contrast style colors
+ * - Optional face-zoom crop
+ * - Export at 1280x720
  */
 export const addTextToImage = (imageUrl: string, textHook: string, style: string): string => {
   if (!imageUrl) throw new Error('imageUrl is required')
@@ -91,61 +95,97 @@ export const addTextToImage = (imageUrl: string, textHook: string, style: string
 
   const styleParams = getStyleParams(style)
 
-  // Sanitize and limit text
-  const safeText = String(textHook).slice(0, 180)
+  // Sanitize and limit text length
+  const safeText = String(textHook).trim().slice(0, 160)
 
-  // Build overlay transformation using SDK-friendly objects.
-  // We avoid overly complex stroke or bo params to reduce fragile URL construction.
-  const overlayLayer: any = {
-    overlay: {
-      font_family: styleParams.fontFamily || 'Arial',
-      font_size: styleParams.fontSize,
-      // Use bold weight if requested; else default
-      font_weight: styleParams.fontWeight || undefined,
-      text: safeText,
-    },
-    color: styleParams.color ? `#${styleParams.color.replace(/^#/, '')}` : undefined,
-    gravity: 'center',
-    y: -20,
-    flags: 'layer_apply',
+  // Determine dynamic font size for mobile-first readability
+  const base = styleParams.fontSize || 80
+  const len = safeText.length
+  let multiplier = 2.2
+  if (len > 30) multiplier = 1.6
+  if (len > 45) multiplier = 1.2
+  const fontSize = Math.max(48, Math.round(base * multiplier))
+
+  // Stroke and shadow sizes
+  const strokeSize = Math.max(6, Math.round(fontSize * 0.12))
+  const shadowOffset = Math.max(6, Math.round(fontSize * 0.05))
+
+  // Positioning via gravity
+  const gravity = styleParams.position === 'top' ? 'north' : 'south'
+  const yOffset = styleParams.position === 'top' ? Math.round(fontSize * 0.35) : -Math.round(fontSize * 0.35)
+
+  const transformations: any[] = []
+
+  // Optional face-zoom crop (center on face then scale)
+  if (styleParams.faceZoom) {
+    transformations.push({ gravity: 'face', crop: 'thumb', width: 1280, height: 720 })
   }
 
-  // Clean undefined keys
-  const cleanedOverlay = Object.keys(overlayLayer).reduce((acc: any, key) => {
-    const val = (overlayLayer as any)[key]
-    if (val !== undefined) acc[key] = val
-    return acc
-  }, {})
+  // Ensure final output is HD scale
+  transformations.push({ width: 1280, height: 720, crop: 'scale' })
 
-  const transformation = [
-    cleanedOverlay,
-    {
-      width: 1280,
-      height: 720,
-      crop: 'scale',
+  // 1) Stroke layer: black text larger than main text
+  transformations.push({
+    overlay: {
+      font_family: styleParams.fontFamily || 'Impact',
+      font_size: fontSize + strokeSize,
+      font_weight: styleParams.fontWeight || 'bold',
+      text: safeText,
     },
-    { fetch_format: 'auto' },
-    { quality: 'auto' },
-  ]
+    color: '#000000',
+    gravity,
+    y: yOffset,
+    flags: 'layer_apply',
+  })
 
-  // Use cloudinary.url to build a properly encoded fetch URL
-  // `type: 'fetch'` tells Cloudinary to fetch the remote source URL (imageUrl)
+  // 2) Shadow layer: slightly offset for depth (we use black and offset; opacity control may require raw_transformation if needed)
+  transformations.push({
+    overlay: {
+      font_family: styleParams.fontFamily || 'Impact',
+      font_size: fontSize,
+      font_weight: styleParams.fontWeight || 'bold',
+      text: safeText,
+    },
+    color: '#000000',
+    gravity,
+    y: yOffset + shadowOffset,
+    flags: 'layer_apply',
+  })
+
+  // 3) Main text
+  const textColor = String(styleParams.color || 'FFFFFF').replace(/^#/, '')
+  transformations.push({
+    overlay: {
+      font_family: styleParams.fontFamily || 'Impact',
+      font_size: fontSize,
+      font_weight: styleParams.fontWeight || 'bold',
+      text: safeText,
+    },
+    color: `#${textColor}`,
+    gravity,
+    y: yOffset,
+    flags: 'layer_apply',
+  })
+
+  // Finalize
+  transformations.push({ fetch_format: 'auto' })
+  transformations.push({ quality: 'auto' })
+
   const generated = cloudinary.url(imageUrl, {
     type: 'fetch',
     resource_type: 'image',
-    transformation,
+    transformation: transformations,
   })
 
   return generated
 }
 
 const getStyleParams = (style: string) => {
-  // Minimal safe style definitions — avoids stroke/border to reduce risk of malformed transforms.
-  const styles: Record<string, { fontFamily?: string; fontSize: number; fontWeight?: string; color: string }> = {
-    'bold-red': { fontFamily: 'Arial', fontSize: 80, fontWeight: 'bold', color: 'FF0000' },
-    'neon-gradient': { fontFamily: 'Arial', fontSize: 90, fontWeight: 'bold', color: 'FFFF00' },
-    'shadow-dark': { fontFamily: 'Arial', fontSize: 75, fontWeight: 'bold', color: 'FFFFFF' },
-    'bright-yellow': { fontFamily: 'Arial', fontSize: 85, fontWeight: 'bold', color: 'FFFF00' },
+  const styles: Record<string, { fontFamily?: string; fontSize: number; fontWeight?: string; color: string; position?: 'top' | 'bottom'; faceZoom?: boolean }> = {
+    'bold-red': { fontFamily: 'Impact,Arial', fontSize: 80, fontWeight: 'bold', color: 'FF2D2D', position: 'bottom', faceZoom: false },
+    'neon-gradient': { fontFamily: 'Impact,Arial', fontSize: 80, fontWeight: 'bold', color: 'FFD44D', position: 'bottom', faceZoom: false },
+    'shadow-dark': { fontFamily: 'Impact,Arial', fontSize: 75, fontWeight: 'bold', color: 'FFFFFF', position: 'top', faceZoom: false },
+    'bright-yellow': { fontFamily: 'Impact,Arial', fontSize: 85, fontWeight: 'bold', color: 'FFD400', position: 'bottom', faceZoom: true },
   }
 
   return styles[style] || styles['bold-red']
