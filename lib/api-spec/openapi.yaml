@@ -10,6 +10,15 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: posts
+    description: Scheduled social media posts
+  - name: dms
+    description: Scheduled direct messages
+  - name: stats
+    description: Dashboard statistics
+  - name: platforms
+    description: Connected social platforms
+
 paths:
   /healthz:
     get:
@@ -24,6 +33,260 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /posts:
+    get:
+      operationId: listPosts
+      tags: [posts]
+      summary: List all scheduled posts
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [scheduled, sent, failed, draft]
+        - name: platform
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Post"
+    post:
+      operationId: createPost
+      tags: [posts]
+      summary: Create a scheduled post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+
+  /posts/{id}:
+    get:
+      operationId: getPost
+      tags: [posts]
+      summary: Get a post by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+        "404":
+          description: Not found
+    patch:
+      operationId: updatePost
+      tags: [posts]
+      summary: Update a scheduled post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostUpdate"
+      responses:
+        "200":
+          description: Updated post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+    delete:
+      operationId: deletePost
+      tags: [posts]
+      summary: Delete a post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /dms:
+    get:
+      operationId: listDms
+      tags: [dms]
+      summary: List all scheduled DMs
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [scheduled, sent, failed, draft]
+      responses:
+        "200":
+          description: List of DMs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Dm"
+    post:
+      operationId: createDm
+      tags: [dms]
+      summary: Create a scheduled DM
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DmInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dm"
+
+  /dms/{id}:
+    get:
+      operationId: getDm
+      tags: [dms]
+      summary: Get a DM by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: DM
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dm"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateDm
+      tags: [dms]
+      summary: Update a scheduled DM
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DmUpdate"
+      responses:
+        "200":
+          description: Updated DM
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dm"
+    delete:
+      operationId: deleteDm
+      tags: [dms]
+      summary: Delete a DM
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /stats:
+    get:
+      operationId: getStats
+      tags: [stats]
+      summary: Get dashboard statistics
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /calendar:
+    get:
+      operationId: getCalendar
+      tags: [stats]
+      summary: Get upcoming scheduled items for calendar view
+      parameters:
+        - name: from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: Calendar items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CalendarItem"
+
+  /platforms:
+    get:
+      operationId: listPlatforms
+      tags: [platforms]
+      summary: List connected social platforms
+      responses:
+        "200":
+          description: Platforms
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Platform"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +297,216 @@ components:
       required:
         - status
 
+    Post:
+      type: object
+      required: [id, content, platforms, scheduledAt, status, createdAt]
+      properties:
+        id:
+          type: integer
+        content:
+          type: string
+        platforms:
+          type: array
+          items:
+            type: string
+        scheduledAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [scheduled, sent, failed, draft]
+        imageUrl:
+          type: ["string", "null"]
+        hashtags:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        sentAt:
+          type: ["string", "null"]
+          format: date-time
+
+    PostInput:
+      type: object
+      required: [content, platforms, scheduledAt]
+      properties:
+        content:
+          type: string
+          minLength: 1
+        platforms:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        scheduledAt:
+          type: string
+          format: date-time
+        imageUrl:
+          type: string
+        hashtags:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [scheduled, draft]
+
+    PostUpdate:
+      type: object
+      properties:
+        content:
+          type: string
+        platforms:
+          type: array
+          items:
+            type: string
+        scheduledAt:
+          type: string
+          format: date-time
+        imageUrl:
+          type: ["string", "null"]
+        hashtags:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [scheduled, draft]
+
+    Dm:
+      type: object
+      required: [id, message, recipients, platform, scheduledAt, status, createdAt]
+      properties:
+        id:
+          type: integer
+        message:
+          type: string
+        recipients:
+          type: array
+          items:
+            type: string
+        platform:
+          type: string
+        scheduledAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [scheduled, sent, failed, draft]
+        createdAt:
+          type: string
+          format: date-time
+        sentAt:
+          type: ["string", "null"]
+          format: date-time
+
+    DmInput:
+      type: object
+      required: [message, recipients, platform, scheduledAt]
+      properties:
+        message:
+          type: string
+          minLength: 1
+        recipients:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        platform:
+          type: string
+        scheduledAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [scheduled, draft]
+
+    DmUpdate:
+      type: object
+      properties:
+        message:
+          type: string
+        recipients:
+          type: array
+          items:
+            type: string
+        platform:
+          type: string
+        scheduledAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [scheduled, draft]
+
+    DashboardStats:
+      type: object
+      required: [totalScheduled, sentToday, failedTotal, draftCount, dmScheduled, dmSentToday, platformBreakdown, upcomingCount]
+      properties:
+        totalScheduled:
+          type: integer
+        sentToday:
+          type: integer
+        failedTotal:
+          type: integer
+        draftCount:
+          type: integer
+        dmScheduled:
+          type: integer
+        dmSentToday:
+          type: integer
+        upcomingCount:
+          type: integer
+        platformBreakdown:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlatformCount"
+
+    PlatformCount:
+      type: object
+      required: [platform, count]
+      properties:
+        platform:
+          type: string
+        count:
+          type: integer
+
+    CalendarItem:
+      type: object
+      required: [id, type, title, scheduledAt, status, platforms]
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [post, dm]
+        title:
+          type: string
+        scheduledAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+        platforms:
+          type: array
+          items:
+            type: string
+
+    Platform:
+      type: object
+      required: [id, name, icon, connected, handle]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        icon:
+          type: string
+        connected:
+          type: boolean
+        handle:
+          type: ["string", "null"]
+        followerCount:
+          type: ["integer", "null"]
