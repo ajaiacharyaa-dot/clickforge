@@ -1,0 +1,1 @@
+- [ClickForge port notes](clickforge-port.md) — Vercel→Replit migration details: env var renames, Cloudinary fallback behavior, removed packages.
