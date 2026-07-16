@@ -1,4 +1,4 @@
-import { FaXTwitter, FaInstagram, FaLinkedin, FaTiktok, FaYoutube } from 'react-icons/fa6';
+import { FaXTwitter, FaInstagram, FaLinkedin, FaTiktok, FaYoutube, FaFacebook } from 'react-icons/fa6';
 import { cn } from '@/lib/utils';
 import { Mail } from 'lucide-react';
 
@@ -24,6 +24,9 @@ export function PlatformIcon({ platform, className }: PlatformIconProps) {
   }
   if (p === 'youtube') {
     return <FaYoutube className={cn(className)} />;
+  }
+  if (p === 'facebook') {
+    return <FaFacebook className={cn(className)} />;
   }
   return <Mail className={cn(className)} />;
 }
