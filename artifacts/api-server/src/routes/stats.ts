@@ -6,6 +6,7 @@ import { gte } from 'drizzle-orm'
 const router: IRouter = Router()
 
 const PLATFORMS = [
+  { id: 'youtube', name: 'YouTube', icon: 'youtube', connected: false, handle: null, followerCount: null },
   { id: 'twitter', name: 'X (Twitter)', icon: 'twitter', connected: true, handle: '@yourhandle', followerCount: 4820 },
   { id: 'instagram', name: 'Instagram', icon: 'instagram', connected: true, handle: '@yourhandle', followerCount: 12400 },
   { id: 'linkedin', name: 'LinkedIn', icon: 'linkedin', connected: false, handle: null, followerCount: null },
