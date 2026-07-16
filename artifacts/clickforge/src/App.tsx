@@ -19,6 +19,16 @@ import DmForm from '@/pages/dms/form';
 import CalendarView from '@/pages/calendar';
 import Platforms from '@/pages/platforms';
 
+import JarvisPage from '@/pages/jarvis';
+import ContentForgePage from '@/pages/content';
+import ResearchForgePage from '@/pages/research';
+import VideoForgePage from '@/pages/video';
+import VoiceForgePage from '@/pages/voice';
+import StoreForgePage from '@/pages/store';
+import AgentForgePage from '@/pages/agents';
+import LearnForgePage from '@/pages/learn';
+import WorkForgePage from '@/pages/work';
+
 const queryClient = new QueryClient();
 
 function Router() {
@@ -32,6 +42,15 @@ function Router() {
         <AppLayout>
           <Switch>
             <Route path="/" component={Dashboard} />
+            <Route path="/jarvis" component={JarvisPage} />
+            <Route path="/content" component={ContentForgePage} />
+            <Route path="/research" component={ResearchForgePage} />
+            <Route path="/video" component={VideoForgePage} />
+            <Route path="/voice" component={VoiceForgePage} />
+            <Route path="/store" component={StoreForgePage} />
+            <Route path="/agents" component={AgentForgePage} />
+            <Route path="/learn" component={LearnForgePage} />
+            <Route path="/work" component={WorkForgePage} />
             <Route path="/posts" component={PostsList} />
             <Route path="/posts/new" component={PostForm} />
             <Route path="/posts/:id" component={PostForm} />
