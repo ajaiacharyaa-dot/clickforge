@@ -1,5 +1,8 @@
 modules = ["nodejs-24", "postgresql-16"]
 
+[run]
+command = "cd apps/web && pnpm exec next dev -H 0.0.0.0 -p 3000"
+
 [deployment]
 router = "application"
 deploymentTarget = "autoscale"
