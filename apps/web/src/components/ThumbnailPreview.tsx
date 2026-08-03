@@ -45,8 +45,15 @@ export const ThumbnailPreview: React.FC<ThumbnailPreviewProps> = ({ variations, 
             <label className="block text-xs font-semibold text-gray-700 mb-2">Current Style: {variations[selectedVariant].style_applied}</label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               {viralStyles.map((style) => (
-                <button key={style.name} onClick={() => onStyleChange?.(variations[selectedVariant].variant_number, style.name)} className={`p-2 rounded border-2 text-sm font-semibold transition ${variations[selectedVariant].style_applied === style.name ? 'border-primary bg-orange-50' : 'border-gray-200 hover:border-primary'}`}>
-                  {style.icon} {style.label}
+                <button
+                  key={style.name}
+                  onClick={() => onStyleChange?.(variations[selectedVariant].variant_number, style.name)}
+                  className={`p-2 rounded border-2 text-sm font-semibold transition ${selectedVariant != null ? 'hover:border-primary' : 'border-gray-200'}`}
+                >
+                  <span className="inline-flex items-center gap-2">
+                    {style.icon && <span aria-hidden>{style.icon}</span>}
+                    <span>{style.label}</span>
+                  </span>
                 </button>
               ))}
             </div>
